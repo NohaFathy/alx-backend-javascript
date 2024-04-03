@@ -1,28 +1,99 @@
+/* eslint-disable jest/expect-expect */
 const assert = require('assert');
-const request = require('supertest');
-const app = require('./api');
+const http = require('http');
 
-describe('GET /available_payments', () => {
-  it('should return the list of available payments', async () => {
-    const response = await request(app).get('/available_payments');
-    assert.strictEqual(response.status, 200);
-    assert.deepStrictEqual(response.body, {
-      payment_methods: {
-        credit_cards: true,
-        paypal: false,
-      },
+// Set up the endpoint URLs
+const BASE_URL = 'http://localhost:7865';
+const LOGIN_URL = `${BASE_URL}/login`;
+const PAYMENTS_URL = `${BASE_URL}/available_payments`;
+
+// Test the /login endpoint
+describe('/login', () => {
+  it('should return a welcome message with the username', () => new Promise((done) => {
+    // Define the request payload
+    const payload = JSON.stringify({ userName: 'john_doe' });
+
+    // Set up the request options
+    const options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      url: LOGIN_URL,
+      body: payload,
+    };
+
+    // Send the request
+    const req = http.request(options, (res) => {
+      let data = '';
+
+      // Set up the response listener
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      // Set up the end listener
+      res.on('end', () => {
+        // Parse the response body
+        const body = JSON.parse(data);
+
+        // Check the status code
+        assert.strictEqual(res.statusCode, 200);
+
+        // Check the response message
+        assert.strictEqual(body.message, 'Welcome john_doe');
+
+        // Done
+        done();
+      });
     });
-  });
+
+    // Send the request payload
+    req.write(payload);
+
+    // End the request
+    req.end();
+  }));
 });
 
-describe('POST /login', () => {
-  it('should return a welcome message with the username', async () => {
-    const userName = 'john_doe';
-    const response = await request(app)
-      .post('/login')
-      .send({ userName });
-    assert.strictEqual(response.status, 200);
-    assert.strictEqual(response.text, `Welcome ${userName}`);
-  });
-});
+// Test the /available_payments endpoint
+describe('/available_payments', () => {
+  it('should return the list of available payments', () => new Promise((done) => {
+    // Set up the request options
+    const options = {
+      method: 'GET',
+      url: PAYMENTS_URL,
+    };
 
+    // Send the request
+    const req = http.request(options, (res) => {
+      let data = '';
+
+      // Set up the response listener
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      // Set up the end listener
+      res.on('end', () => {
+        // Parse the response body
+        const body = JSON.parse(data);
+
+        // Check the status code
+        assert.strictEqual(res.statusCode, 200);
+
+        // Check the response structure
+        assert.deepStrictEqual(body, {
+          payment_methods: {
+            credit_cards: true,
+            paypal: false,
+          },
+        });
+
+        // Done
+        done();
+      });
+    });
+
+    // End the request
+    req.end();
+  }));
+});
