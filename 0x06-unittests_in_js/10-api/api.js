@@ -1,20 +1,12 @@
 const express = require('express');
 
 const app = express();
-const port = 7865;
 
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Welcome to the payment system');
-});
-
-app.get('/cart/:id([0-9]+)', (req, res) => {
-  res.send(`Payment methods for cart ${req.params.id}`);
-});
-
+// Endpoint to handle GET /available_payments
 app.get('/available_payments', (req, res) => {
-  res.status(200).json({
+  res.json({
     payment_methods: {
       credit_cards: true,
       paypal: false,
@@ -22,13 +14,14 @@ app.get('/available_payments', (req, res) => {
   });
 });
 
+// Endpoint to handle POST /login
 app.post('/login', (req, res) => {
   const { userName } = req.body;
-  res.status(200).send(`Welcome ${userName}`);
+  res.json({ message: `Welcome ${userName}` });
 });
 
+// Start the server
+const port = 7865;
 app.listen(port, () => {
   console.log(`API available on localhost port ${port}`);
 });
-
-module.exports = app;

@@ -1,30 +1,29 @@
-/* eslint-disable jest/expect-expect */
-/* eslint-disable jest/valid-expect */
+const mocha = require('mocha');
 const { expect } = require('chai');
-const assert = require('assert');
+const sinon = require('sinon');
 
-const getPaymentTokenFromAPI = require('./6-payment_token');
+const sendPaymentRequestToApi = require('./5-payment');
 
-describe('getPaymentTokenFromAPI', () => {
-  it('returns a resolved promise with the object {data: "Successful response from the API"} when success is true', () => new Promise((done) => {
-    getPaymentTokenFromAPI(true)
-      .then((response) => {
-        expect(response).to.deep.equal({ data: 'Successful response from the API' });
-        done();
-      })
-      .catch(done);
-  }));
+describe('sendPaymentRequestToApi', () => {
+  let spy;
 
-  // FAILING BELOW
-  // eslint-disable-next-line jest/no-commented-out-tests, jest/no-disabled-tests
-  it.skip('should return a rejected promise when success is false', () => new Promise((done) => {
-    getPaymentTokenFromAPI(false, (err) => {
-      try {
-        assert.strictEqual(err, 'Error');
-        done();
-      } catch (err) {
-        done(err);
-      }
-    });
-  }));
+  beforeEach(() => {
+    spy = sinon.spy(console, 'log');
+  });
+
+  afterEach(() => {
+    spy.restore();
+  });
+
+  it('should log 120 if a = 100 and b = 20', () => {
+    sendPaymentRequestToApi(100, 20);
+    expect(spy.calledOnceWithExactly('The total is: 120')).to.be.true;
+    expect(spy.calledOnce).to.be.true;
+  });
+
+  it('should log 20 if a = 10 and b = 10', () => {
+    sendPaymentRequestToApi(10, 10);
+    expect(spy.calledOnceWithExactly('The total is: 20')).to.be.true;
+    expect(spy.calledOnce).to.be.true;
+  });
 });
