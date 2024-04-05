@@ -1,54 +1,27 @@
-/* eslint-disable jest/expect-expect */
-const assert = require('assert');
-const { request } = require('http');
+const { expect } = require("chai");
+const request = require('request');
 
-describe('index page', () => {
-  it('returns status code 200', () => new Promise((done) => {
-    request('http://localhost:7865', (res) => {
-      assert.strictEqual(res.statusCode, 200);
-      done();
-    }).end();
-  }));
+describe("Index page", () => {
+	it("Index Page Testing...", (done) => {
+		request("http://localhost:7865", (err, res) => {
+			expect(res.statusCode).to.equal(200);
+			expect(res.body).to.equal("Welcome to the payment system");
+			done();
+		})
+	});
 
-  it('returns the welcome message', () => new Promise((done) => {
-    request('http://localhost:7865', (res) => {
-      let data = '';
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-      res.on('end', () => {
-        assert.strictEqual(data, 'Welcome to the payment system');
-        done();
-      });
-    }).end();
-  }));
-});
+	it("Cart Page Testing...", (done) => {
+		request("http://localhost:7865/cart/12", (err, res) => {
+			expect(res.statusCode).to.equal(200);
+			expect(res.body).to.equal("Payment methods for cart 12");
+            done();
+		})
+	});
 
-describe('cart page', () => {
-  it('returns status code 200 when :id is a number', () => new Promise((done) => {
-    request('http://localhost:7865/cart/123', (res) => {
-      assert.strictEqual(res.statusCode, 200);
-      done();
-    }).end();
-  }));
-
-  it('returns status code 404 when :id is not a number', () => new Promise((done) => {
-    request('http://localhost:7865/cart/abc', (res) => {
-      assert.strictEqual(res.statusCode, 404);
-      done();
-    }).end();
-  }));
-
-  it('returns payment methods for cart :id', () => new Promise((done) => {
-    request('http://localhost:7865/cart/123', (res) => {
-      let data = '';
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-      res.on('end', () => {
-        assert.strictEqual(data, 'Payment methods for cart 123');
-        done();
-      });
-    }).end();
-  }));
+	it("Cart Page Testing...", (done) => {
+		request("http://localhost:7865/cart/hello", (err, res) => {
+			expect(res.statusCode).to.equal(404);
+            done();
+		})
+	});
 });
