@@ -4,27 +4,33 @@ class StudentsController {
   static getAllStudents(request, response) {
     readDatabase(process.argv[2])
       .then((data) => {
-        const printData = [];
-        printData.push('This is the list of our students');
-        for (const field in data) {
-          if (field) printData.push(`Number of students in ${field}: ${data[field].number}. ${data[field].list}`);
+        let result = 'This is the list of our students';
+        const sortedData = Object.keys(data).sort();
+        console.log(sortedData);
+        for (const field of sortedData) {
+          const nameLen = data[field].length;
+          const names = data[field].join(', ');
+          result += `\nNumber of students in ${field}: ${nameLen}. List: ${names}`;
         }
-        response.send(printData.join('\n'));
+        response.status(200).send(result);
       })
-      .catch((err) => { response.send(err.message); });
+      .catch(() => {
+        response.status(500).send('Cannot load the database');
+      });
   }
 
   static getAllStudentsByMajor(request, response) {
-    if (!['SWE', 'CS'].includes(request.params.major)) response.status(500).send('Major parameter must be CS or SWE');
-    else {
-      readDatabase(process.argv[2])
-        .then((data) => {
-          if (Object.keys(data).length > 0) response.send(data[request.params.major].list);
-          response.send(500, 'Cannot load the database');
-        })
-        .catch((err) => { response.send(err.message); });
-    }
+    const { major } = request.params;
+    if ((major !== 'CS') && (major !== 'SWE')) response.status(500).send('Major parameter must be CS or SWE');
+
+    readDatabase(process.argv[2])
+      .then((data) => {
+        const names = data[major].join(', ');
+        response.status(200).send(`List: ${names}`);
+      })
+      .catch(() => {
+        response.status(500).send('Cannot load the database');
+      });
   }
 }
-
 module.exports = StudentsController;

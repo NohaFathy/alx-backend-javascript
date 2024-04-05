@@ -1,15 +1,13 @@
 const express = require('express');
-const router = require('./routes/index');
+const routes = require('./routes/index');
 
 const app = express();
 const port = 1245;
 
-app.use('/', router);
-app.use('/students', router);
-app.use('/students/:major', router);
+app.use('/', routes);
 
 app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}`);
+  console.log(`Example app listening on port ${port}`);
 });
 
 module.exports = app;

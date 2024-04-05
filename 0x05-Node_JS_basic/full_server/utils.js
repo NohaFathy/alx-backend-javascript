@@ -1,39 +1,40 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 
-const readDatabase = (path) => new Promise((resolve, reject) => {
-  fs.readFile(path, (error, csvData) => {
-    if (error) {
-      reject(Error('Cannot load the database'));
-    }
-    if (csvData) {
-      const fields = {};
-      const dataShow = {};
-      let data = csvData.toString().split('\n');
-      data = data.filter((element) => element.length > 0);
-
-      data.shift();
-      data.forEach((element) => {
-        if (element.length > 0) {
-          const row = element.split(',');
-          if (row[3] in fields) {
-            fields[row[3]].push(row[0]);
+const readDatabase = (path) => new Promise((resolve, rejects) => {
+  fs.readFile(path, 'utf-8').then((d) => {
+    const data = d.split('\n').splice(1);
+    const fieldObj = {};
+    if (data) {
+      data.forEach((e) => {
+        if (e.length) {
+          const line = e.split(',');
+          const lineLen = line.length;
+          const filed = line[lineLen - 1];
+          const firstName = line[0];
+          if (filed in fieldObj) {
+            fieldObj[filed].data.push(firstName);
+            fieldObj[filed].count += 1;
           } else {
-            fields[row[3]] = [row[0]];
+            fieldObj[filed] = {
+              data: [firstName],
+              count: 1,
+            };
           }
         }
       });
-      for (const field in fields) {
-        if (field) {
-          const list = fields[field];
-          dataShow[field] = {
-            list: `List: ${list.toString().replace(/,/g, ', ')}`,
-            number: list.length,
-          };
-        }
-      }
-
-      resolve(dataShow);
     }
+
+    const result = {};
+
+    for (const field in fieldObj) {
+      if (field in fieldObj) {
+        const { data } = fieldObj[field];
+        result[field] = data;
+      }
+    }
+    resolve(result);
+  }).catch(() => {
+    rejects(new Error());
   });
 });
 
